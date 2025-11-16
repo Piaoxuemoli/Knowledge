@@ -5,33 +5,53 @@ import { knowledgeBasePlaceholder } from "../knowledgeSample";
 const NORMALIZED_WHITESPACE_REGEX = /\s+/g;
 
 function normalizeText(text: string): string {
-  return text.toLowerCase().replace(NORMALIZED_WHITESPACE_REGEX, " ").trim();
+  // 小写、去除首尾空白
+  const lowered = text.toLowerCase().replace(NORMALIZED_WHITESPACE_REGEX, " ").trim();
+  // 去除标点符号（含中英文），仅保留字母数字及CJK文字
+  // 使用 Unicode 属性转义，需启用 'u' 标志
+  const cleaned = lowered.replace(/[^\p{L}\p{N}\s]+/gu, "");
+  return cleaned;
+}
+
+function makeNGrams(input: string, n: number): string[] {
+  const s = input.replace(NORMALIZED_WHITESPACE_REGEX, "");
+  if (s.length === 0) return [];
+  if (s.length <= n) return Array.from(s);
+  const grams: string[] = [];
+  for (let i = 0; i <= s.length - n; i++) {
+    grams.push(s.slice(i, i + n));
+  }
+  return grams;
+}
+
+function tokenize(text: string): string[] {
+  const norm = normalizeText(text);
+  if (/\s/.test(norm)) {
+    return norm.split(/\s+/).filter(Boolean);
+  }
+  // 对无空格语言（如中文）使用双字gram
+  const grams2 = makeNGrams(norm, 2);
+  return grams2.length > 0 ? grams2 : Array.from(norm);
 }
 
 function calculateSimilarityScore(
   targetText: string,
   candidateText: string,
 ): number {
-  const normalizedTargetTokens = normalizeText(targetText).split(" ");
-  const normalizedCandidateTokens = normalizeText(candidateText).split(" ");
-
-  if (
-    normalizedTargetTokens.length === 0 ||
-    normalizedCandidateTokens.length === 0
-  ) {
-    return 0;
-  }
-
-  const candidateTokenSet = new Set(normalizedCandidateTokens);
-  let matchCount = 0;
-
-  normalizedTargetTokens.forEach((token) => {
-    if (candidateTokenSet.has(token)) {
-      matchCount += 1;
-    }
-  });
-
-  return matchCount / normalizedTargetTokens.length;
+  const a = normalizeText(targetText);
+  const b = normalizeText(candidateText);
+  if (!a || !b) return 0;
+  // 强包含判定
+  if (a.includes(b) || b.includes(a)) return 1;
+  const ta = tokenize(a);
+  const tb = tokenize(b);
+  if (ta.length === 0 || tb.length === 0) return 0;
+  const setA = new Set(ta);
+  const setB = new Set(tb);
+  let inter = 0;
+  setA.forEach((t) => { if (setB.has(t)) inter++; });
+  const union = setA.size + setB.size - inter;
+  return union > 0 ? inter / union : 0;
 }
 
 /**
@@ -91,7 +111,7 @@ export function loadFlatKnowledgeBase(): KnowledgeItem[] {
  */
 export function findBestKnowledgeMatch(
   question: string,
-  threshold = 0.45,
+  threshold = 0.2,
 ): KnowledgeItem | null {
   const categories = loadKnowledgeBase();
   
@@ -117,14 +137,14 @@ export function findBestKnowledgeMatch(
       const subcategoryScore = calculateKeywordScore(question, subcategory.keywords);
       
       // 结合一级和二级分类的得分（加权）
-      const categoryBonus = categoryScore * 0.3 + subcategoryScore * 0.4;
+      const categoryBonus = categoryScore * 0.4 + subcategoryScore * 0.6;
       
       // 在该二级分类下匹配具体问题
       subcategory.items.forEach(item => {
         const questionScore = calculateSimilarityScore(question, item.question);
         
-        // 最终得分 = 问题相似度(60%) + 分类匹配度(40%)
-        const finalScore = questionScore * 0.6 + categoryBonus;
+        // 最终得分：加大分类匹配的影响，适配中文场景
+        const finalScore = questionScore * 0.5 + categoryBonus * 0.5;
         
         if (!bestMatch || finalScore > bestMatch.score) {
           bestMatch = {
