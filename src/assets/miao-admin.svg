@@ -1,0 +1,27 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(120 96) rotate(90) scale(176 160)">
+      <stop stop-color="#F2F7FF" />
+      <stop offset="1" stop-color="#C9D8FF" />
+    </radialGradient>
+    <linearGradient id="paint1_linear" x1="52" y1="188" x2="188" y2="188" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6578FF" />
+      <stop offset="1" stop-color="#2236B7" />
+    </linearGradient>
+  </defs>
+  <rect x="16" y="24" width="208" height="200" rx="38" fill="url(#paint0_radial)" />
+  <path d="M80 92C76 76 76 56 92 60C108 64 110 86 110 86" stroke="#3143B0" stroke-width="6" stroke-linecap="round" />
+  <path d="M160 92C164 76 164 56 148 60C132 64 130 86 130 86" stroke="#3143B0" stroke-width="6" stroke-linecap="round" />
+  <path d="M74 128C74 100 96 78 120 78C144 78 166 100 166 128C166 158 148 184 120 184C92 184 74 158 74 128Z" fill="#FFFFFF" stroke="#3143B0" stroke-width="6" />
+  <ellipse cx="100" cy="126" rx="11" ry="12" fill="#3143B0" />
+  <ellipse cx="140" cy="126" rx="11" ry="12" fill="#3143B0" />
+  <path d="M108 154C120 158 132 158 144 154" stroke="#2236B7" stroke-width="6" stroke-linecap="round" />
+  <path d="M80 162C70 170 72 182 84 188C94 192 112 186 120 178" stroke="#3143B0" stroke-width="6" stroke-linecap="round" />
+  <path d="M160 162C170 170 168 182 156 188C146 192 128 186 120 178" stroke="#3143B0" stroke-width="6" stroke-linecap="round" />
+  <path d="M120 60C136 60 148 52 152 40C136 44 124 46 108 46" stroke="#3143B0" stroke-width="6" stroke-linecap="round" />
+  <rect x="84" y="48" width="72" height="20" rx="10" fill="#2236B7" />
+  <path d="M120 186C150 186 170 204 170 214H70C70 204 90 186 120 186Z" fill="url(#paint1_linear)" />
+  <path d="M58 208C52 196 56 186 68 188C80 190 92 204 92 204" stroke="#3143B0" stroke-width="6" stroke-linecap="round" />
+  <path d="M182 208C188 196 184 186 172 188C160 190 148 204 148 204" stroke="#3143B0" stroke-width="6" stroke-linecap="round" />
+  <rect x="98" y="98" width="44" height="12" rx="6" fill="#3143B0" opacity="0.3" />
+</svg>
