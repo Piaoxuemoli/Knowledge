@@ -84,7 +84,7 @@ function App() {
 
   const deepseekConfig = useMemo<DeepseekConfig>(
     () => ({
-      apiKey: (import.meta.env.VITE_DEEPSEEK_API_KEY ?? "").trim(),
+      // API Key 已移至后端，前端不再需要配置
     }),
     [],
   );

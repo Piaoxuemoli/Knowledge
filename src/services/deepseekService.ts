@@ -1,4 +1,5 @@
-const DEEPSEEK_API_BASE_URL = "https://api.deepseek.com";
+// 使用本地后端代理，不再直接调用 DeepSeek API
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export interface DeepseekMessage {
   role: "user" | "assistant" | "system";
@@ -22,7 +23,7 @@ interface DeepseekChatResponse {
 }
 
 export interface DeepseekConfig {
-  apiKey: string;
+  apiKey?: string; // 已废弃，保留仅为兼容性
   model?: string;
   temperature?: number;
   maxTokens?: number;
@@ -33,17 +34,10 @@ export async function callDeepseek(
   config: DeepseekConfig,
 ): Promise<string> {
   const {
-    apiKey,
     model = "deepseek-chat",
     temperature = 0.6,
     maxTokens = 1024,
   } = config;
-
-  if (!apiKey) {
-    throw new Error(
-      "未检测到 DeepSeek API Key，请在 .env 文件中配置 VITE_DEEPSEEK_API_KEY。",
-    );
-  }
 
   const requestBody: DeepseekChatPayload = {
     model,
@@ -52,25 +46,25 @@ export async function callDeepseek(
     max_tokens: maxTokens,
   };
 
-  const response = await fetch(`${DEEPSEEK_API_BASE_URL}/v1/chat/completions`, {
+  // 调用本地后端代理
+  const response = await fetch(`${API_BASE_URL}/api/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`DeepSeek API 调用失败: ${errorText}`);
+    throw new Error(`后端 API 调用失败: ${errorText}`);
   }
 
   const responseBody = (await response.json()) as DeepseekChatResponse;
   const assistantReply = responseBody.choices?.[0]?.message?.content ?? "";
 
   if (!assistantReply) {
-    throw new Error("DeepSeek API 未返回有效回复，请稍后再试。");
+    throw new Error("API 未返回有效回复，请稍后再试。");
   }
 
   return assistantReply.trim();

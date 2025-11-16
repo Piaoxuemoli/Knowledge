@@ -1,0 +1,16 @@
+{
+  "name": "knowledge-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "简单的 DeepSeek API 代理服务器",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

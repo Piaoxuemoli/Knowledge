@@ -13,24 +13,44 @@
 ## 快速开始
 
 ```bash
-# 安装依赖
+# 1. 安装前端依赖
 npm install
 
-# 复制示例环境变量
-copy .env.example .env
-# 或者手动创建 .env 并写入：
-# VITE_DEEPSEEK_API_KEY=你的密钥
+# 2. 安装后端依赖
+cd server
+npm install
+cd ..
 
-# 运行开发服务器
+# 3. 配置 API Key（重要！）
+# 编辑 server/.env 文件，填入你的 DeepSeek API Key：
+# DEEPSEEK_API_KEY=sk-your-api-key-here
+
+# 4. 同时启动前后端（推荐）
+npm run dev:all
+
+# 或者分别启动：
+# 终端 1：启动后端（端口 3000）
+npm run dev:server
+
+# 终端 2：启动前端（端口 5173）
 npm run dev
 ```
 
-访问终端输出的本地地址（默认 <http://localhost:5173>）即可体验。
+访问 <http://localhost:5173> 即可体验。
+
+**注意**：
+- API Key 现在存储在 `server/.env` 中，**不会暴露到浏览器**
+- 前端通过 `http://localhost:3000` 调用后端代理接口
+- 后端会代理请求到 DeepSeek API
 
 ## 项目结构
 
 ```text
 Knowledge/
+├─ server/                    # 后端代理服务器
+│  ├─ server.js              # 简单的 Express 服务器
+│  ├─ package.json           # 后端依赖
+│  └─ .env                   # API Key 配置（重要！）
 ├─ image/                     # 耄耋表情图片
 ├─ src/
 │  ├─ App.tsx                 # 主界面与业务逻辑
@@ -39,12 +59,12 @@ Knowledge/
 │  ├─ knowledgeBase.json      # 本地知识库（示例数据）
 │  ├─ knowledgeSample.ts      # 空库时的占位样例
 │  ├─ services/
-│  │  ├─ deepseekService.ts   # DeepSeek API 封装
+│  │  ├─ deepseekService.ts   # 调用后端代理接口
 │  │  └─ knowledgeService.ts  # 简易相似度匹配逻辑
 │  ├─ types.ts                # 类型定义
 │  └─ main.tsx                # React 入口
-├─ .env.example               # 环境变量示例
-├─ package.json               # NPM 配置
+├─ .env                       # 前端环境变量（后端地址）
+├─ package.json               # 前端 NPM 配置
 └─ README.md                  # 使用说明（当前文件）
 ```
 
@@ -56,8 +76,23 @@ Knowledge/
 
 ## 常见问题
 
-- **DeepSeek 调用失败**：确认 `.env` 中的 `VITE_DEEPSEEK_API_KEY` 已填写并重新启动。
+- **后端无法启动**：
+  1. 确认 `server/.env` 中的 `DEEPSEEK_API_KEY` 已填写
+  2. 检查端口 3000 是否被占用
+  3. 确保已在 `server` 目录下运行 `npm install`
+
+- **前端调用失败**：
+  1. 确认后端服务已启动（访问 http://localhost:3000/health 应返回 `{"status":"ok"}`）
+  2. 检查浏览器控制台是否有 CORS 错误
+  3. 确认 `.env` 中的 `VITE_API_URL` 正确指向后端地址
+
+- **DeepSeek 调用失败**：
+  1. 验证 API Key 是否正确
+  2. 检查网络连接
+  3. 查看后端终端输出的错误信息
+
 - **未从知识库命中**：检查问题文本是否与 `question` 相似，可在 `findBestKnowledgeMatch` 中调低阈值。
+
 - **样式调整**：修改 `src/App.css` 即可，已使用普通 CSS，易于定制。
 
 祝你展示顺利，喵！
