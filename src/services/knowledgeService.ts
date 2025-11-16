@@ -1,5 +1,5 @@
 import type { KnowledgeItem, FirstLevelCategory, SecondLevelCategory, ThirdLevelKnowledge } from "../types";
-import knowledgeBaseJson from "../knowledgeBase.json";
+import knowledgeBaseJson from "../knowledgeBase.clean.json";
 import { knowledgeBasePlaceholder } from "../knowledgeSample";
 
 const NORMALIZED_WHITESPACE_REGEX = /\s+/g;
