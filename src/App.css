@@ -251,7 +251,35 @@ body {
 
 .chat-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.multi-turn-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #5b73ff;
+}
+
+.toggle-label {
+  color: #5d6995;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.multi-turn-toggle:hover .toggle-label {
+  color: #3a4c7f;
 }
 
 .send-button {

@@ -1,6 +1,6 @@
 # 知识驱动喵系聊天机器人
 
-一个用于课程作业的 React + TypeScript 前端项目，展示“本地知识库优先 + DeepSeek 兜底”的多轮对话流程，并加入了傲娇猫娘人格以及耄耋系列情绪插图。
+一个用于练习的 React + TypeScript 前端项目，展示“本地知识库优先 + DeepSeek 兜底”的多轮对话流程，并加入了傲娇猫娘人格以及耄耋系列情绪插图。
 
 ## 功能亮点
 
@@ -36,9 +36,10 @@ npm run dev:server
 npm run dev
 ```
 
-访问 <http://localhost:5173> 即可体验。
+访问 [http://localhost:5173](http://localhost:5173) 即可体验。
 
 **注意**：
+
 - API Key 现在存储在 `server/.env` 中，**不会暴露到浏览器**
 - 前端通过 `http://localhost:3000` 调用后端代理接口
 - 后端会代理请求到 DeepSeek API
@@ -77,22 +78,21 @@ Knowledge/
 ## 常见问题
 
 - **后端无法启动**：
+
   1. 确认 `server/.env` 中的 `DEEPSEEK_API_KEY` 已填写
   2. 检查端口 3000 是否被占用
   3. 确保已在 `server` 目录下运行 `npm install`
-
 - **前端调用失败**：
+
   1. 确认后端服务已启动（访问 http://localhost:3000/health 应返回 `{"status":"ok"}`）
   2. 检查浏览器控制台是否有 CORS 错误
   3. 确认 `.env` 中的 `VITE_API_URL` 正确指向后端地址
-
 - **DeepSeek 调用失败**：
+
   1. 验证 API Key 是否正确
   2. 检查网络连接
   3. 查看后端终端输出的错误信息
-
 - **未从知识库命中**：检查问题文本是否与 `question` 相似，可在 `findBestKnowledgeMatch` 中调低阈值。
-
 - **样式调整**：修改 `src/App.css` 即可，已使用普通 CSS，易于定制。
 
 祝你展示顺利，喵！

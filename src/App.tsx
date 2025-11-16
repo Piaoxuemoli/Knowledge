@@ -68,6 +68,7 @@ function App() {
   const [assistantMood, setAssistantMood] = useState<AssistantMood>("happy");
   const [hearts, setHearts] = useState<string[]>([]);
   const [showEaster, setShowEaster] = useState(false);
+  const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
 
   const spawnHeart = () => {
@@ -153,7 +154,23 @@ function App() {
         history: ChatMessage[],
         knowledgeItem?: KnowledgeItem,
       ): DeepseekMessage[] => {
-        const baseHistory = history.map(mapToDeepseekMessage);
+        // 如果启用多轮对话，只保留最近5轮对话（10条消息：5个用户+5个助手）
+        let contextHistory = history;
+        if (multiTurnEnabled) {
+          // 找出所有用户和助手的消息对
+          const pairs: ChatMessage[] = [];
+          for (let i = history.length - 1; i >= 0; i--) {
+            pairs.unshift(history[i]);
+            // 最多保留5轮（10条消息）
+            if (pairs.length >= 10) break;
+          }
+          contextHistory = pairs;
+        } else {
+          // 不启用多轮对话，只使用最后一条用户消息
+          contextHistory = history.slice(-1);
+        }
+
+        const baseHistory = contextHistory.map(mapToDeepseekMessage);
         const supplementaryInstructions: DeepseekMessage[] = [];
 
         if (knowledgeItem) {
@@ -325,6 +342,17 @@ function App() {
             disabled={isLoading}
           />
           <div className="chat-actions">
+            <label className="multi-turn-toggle">
+              <input
+                type="checkbox"
+                checked={multiTurnEnabled}
+                onChange={(e) => setMultiTurnEnabled(e.target.checked)}
+                className="toggle-checkbox"
+              />
+              <span className="toggle-label">
+                多轮对话 {multiTurnEnabled ? "(已启用，最多5轮)" : "(已关闭)"}
+              </span>
+            </label>
             <button
               type="submit"
               className="send-button"
