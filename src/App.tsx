@@ -119,26 +119,9 @@ function App() {
     const nextQuestionCount = questionCount + 1;
     setQuestionCount(nextQuestionCount);
 
-    if (nextQuestionCount > 5) {
-      setAssistantMood("angry");
-      setPipelineStage("idle");
-      setIsLoading(false);
-
-      const restReply: ChatMessage = {
-        id: createMessageId(),
-        role: "assistant",
-        content: "本喵也是要休息的！",
-      };
-
-      setMessages([...nextMessagesAfterUser, restReply]);
-      setPipelineStage("idle");
-      setAssistantMood("angry");
-      return;
-    }
-
     setIsLoading(true);
     setPipelineStage("knowledge");
-    setAssistantMood("confused");
+    setAssistantMood(nextQuestionCount > 5 ? "angry" : "confused");
 
     try {
       const knowledgeMatch = findBestKnowledgeMatch(trimmedContent);
@@ -224,7 +207,7 @@ function App() {
 
         setMessages([...nextMessagesAfterUser, deepseekReply]);
         setPipelineStage("idle");
-        setAssistantMood("happy");
+        setAssistantMood(nextQuestionCount > 5 ? "angry" : "happy");
       } else {
         setPipelineStage("deepseek");
 
@@ -246,7 +229,7 @@ function App() {
 
         setMessages([...nextMessagesAfterUser, deepseekReply]);
         setPipelineStage("idle");
-        setAssistantMood("happy");
+        setAssistantMood(nextQuestionCount > 5 ? "angry" : "happy");
       }
     } catch (error) {
       const failureReply: ChatMessage = {
