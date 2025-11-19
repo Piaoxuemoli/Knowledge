@@ -61,15 +61,15 @@ function App() {
       source: "deepseek",
     },
   ]);
-  const [inputValue, setInputValue] = useState("");
-  const [pipelineStage, setPipelineStage] = useState<PipelineStage>("idle");
-  const [isLoading, setIsLoading] = useState(false);
-  const [questionCount, setQuestionCount] = useState(0);
-  const [assistantMood, setAssistantMood] = useState<AssistantMood>("happy");
-  const [hearts, setHearts] = useState<string[]>([]);
-  const [showEaster, setShowEaster] = useState(false);
-  const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);
-  const messageEndRef = useRef<HTMLDivElement | null>(null);
+  const [inputValue, setInputValue] = useState(""); // 输入框内容
+  const [pipelineStage, setPipelineStage] = useState<PipelineStage>("idle"); // 来源标识
+  const [isLoading, setIsLoading] = useState(false); // 加载状态
+  const [questionCount, setQuestionCount] = useState(0); // 对话的伦次
+  const [assistantMood, setAssistantMood] = useState<AssistantMood>("happy"); // 图标切换
+  const [hearts, setHearts] = useState<string[]>([]); // 小心心控制
+  const [showEaster, setShowEaster] = useState(false); // 丘比龙
+  const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);  // 多轮对话开关
+  const messageEndRef = useRef<HTMLDivElement | null>(null); // 滚动到底部引用
 
   const spawnHeart = () => {
     const id = createMessageId();
@@ -88,7 +88,7 @@ function App() {
       // API Key 已移至后端，前端不再需要配置
     }),
     [],
-  );
+  ); // 保持配件干燥
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -110,7 +110,7 @@ function App() {
       id: createMessageId(),
       role: "user",
       content: trimmedContent,
-    };
+    }; // 构建用户消息对象
 
     const nextMessagesAfterUser = [...messages, userMessage];
     setMessages(nextMessagesAfterUser);
@@ -121,7 +121,7 @@ function App() {
 
     setIsLoading(true);
     setPipelineStage("knowledge");
-    setAssistantMood(nextQuestionCount > 5 ? "angry" : "confused");
+    setAssistantMood(nextQuestionCount > 5 ? "angry" : "confused"); // 超过5轮变愤怒表情
 
     try {
       const knowledgeMatch = findBestKnowledgeMatch(trimmedContent);
@@ -153,7 +153,7 @@ function App() {
           contextHistory = history.slice(-1);
         }
 
-        const baseHistory = contextHistory.map(mapToDeepseekMessage);
+        const baseHistory = contextHistory.map(mapToDeepseekMessage); // 分成assistant和user
         const supplementaryInstructions: DeepseekMessage[] = [];
 
         if (knowledgeItem) {
@@ -243,7 +243,7 @@ function App() {
       setAssistantMood("admin");
       console.error(error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false);  // 无论成功与否都结束加载状态
     }
   };
 
