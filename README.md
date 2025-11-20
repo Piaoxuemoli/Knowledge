@@ -1,76 +1,83 @@
-# 知识驱动喵系聊天机器人
+# 知识驱动喵系聊天机器人 (KnowledgeAssistant)
 
-一个用于练习的 React + TypeScript 前端项目，展示“本地知识库优先 + DeepSeek 兜底”的多轮对话流程，并加入了傲娇猫娘人格以及耄耋系列情绪插图。
+一个基于 **Electron + React + TypeScript** 构建的桌面端聊天机器人，展示“本地知识库优先 + DeepSeek 兜底”的多轮对话流程，并加入了傲娇猫娘人格以及耄耋系列情绪插图。支持 Windows 桌面客户端运行。
 
 ## 界面展示
 
-![1763629581381](image/README/1763629581381.png)
+![1763654487044](image/README/1763654487044.png)
 
 ## 功能亮点
 
 - **侧边栏历史记录**：支持新建、删除会话，自动保存聊天记录到本地（LocalStorage），刷新不丢失。
 - **多轮对话开关（最多5轮）**：可一键开启真实多轮对话，维护最近 5 轮上下文（第 6 轮起滚动淘汰最早一轮）；关闭时为独立问答。
 - **三级知识库 + 智能匹配**：`src/knowledgeBase.json` 采用“领域/子领域/问答”三级结构，并基于关键词权重 + 问题相似度综合匹配，优先返回本地答案。
-- **后端安全代理 DeepSeek**：由 `server/server.js` 代理调用 DeepSeek，API Key 安全存放在 `server/.env`，前端不再暴露密钥。
+- **双模式运行**：支持 Web 浏览器模式（需启动后端服务）和 Electron 桌面客户端模式（内置 IPC 通信）。
+- **后端安全代理 DeepSeek**：
+  - **Web 模式**：由 `server/server.js` 代理调用 DeepSeek。
+  - **Electron 模式**：通过 IPC 通信由主进程直接调用，API Key 安全存放在本地环境。
 - **情绪插画**：根据状态切换“耄耋送花/疑惑/行政/愤怒”插图。
 - **川剧机制**：连续提问超过 5 次会触发耄耋愤怒表情。
 - **隐藏彩蛋**：试着问问“你的创造者是谁”，也许会有惊喜哦！
 
 ## 快速开始
 
+### 1. 环境准备
+
 ```bash
-# 1. 安装前端依赖
+# 安装项目依赖（根目录）
 npm install
 
-# 2. 安装后端依赖
+# 安装后端依赖（仅 Web 模式需要）
 cd server
 npm install
 cd ..
-
-# 3. 配置 API Key（重要！）
-# 编辑 server/.env 文件，填入你的 DeepSeek API Key：
-# DEEPSEEK_API_KEY=sk-your-api-key-here
-
-# 4. 启动服务
-
-**方式一：使用快速启动脚本（推荐）**
-
-Windows 用户可以直接运行根目录下的 `start.ps1` 脚本，它会自动检查依赖、配置并启动服务。
-
-```powershell
-.\start.ps1
 ```
 
-**方式二：手动启动**
+### 2. 配置 API Key
+
+在项目根目录创建 `.env` 文件（推荐），或在 `server/.env` 中配置：
+
+```env
+DEEPSEEK_API_KEY=sk-your-api-key-here
+```
+
+### 3. 运行项目
+
+**桌面客户端模式（推荐）**
+
+```bash
+# 开发环境启动
+npm run electron
+
+# 打包构建 (Windows)
+npm run electron:build
+# 构建完成后，安装包位于 release_v1/ 目录下
+```
+
+**Web 浏览器模式**
 
 ```bash
 # 同时启动前后端
 npm run dev:all
-
-# 或者分别启动：
-# 终端 1：启动后端（端口 3000）
-npm run dev:server
-
-# 终端 2：启动前端（端口 5173）
-npm run dev
 ```
-
-访问 [http://localhost:5173](http://localhost:5173) 即可体验。
 
 **注意**：
 
-- API Key 现在存储在 `server/.env` 中，**不会暴露到浏览器**
-- 前端通过 `http://localhost:3000` 调用后端代理接口
-- 后端会代理请求到 DeepSeek API
+- Electron 模式下，应用会优先读取根目录 `.env` 文件。
+- Web 模式下，前端通过 `http://localhost:3000` 调用后端代理接口。
 
 ## 项目结构
 
 ```text
 Knowledge/
-├─ server/                    # 后端代理服务器
+├─ electron/                  # Electron 主进程与预加载脚本
+│  ├─ main.cjs               # 主进程入口
+│  └─ preload.cjs            # 预加载脚本 (IPC)
+├─ release_v1/                # 打包输出目录
+├─ server/                    # 后端代理服务器 (Web模式用)
 │  ├─ server.js              # 简单的 Express 服务器
 │  ├─ package.json           # 后端依赖
-│  └─ .env                   # API Key 配置（重要！）
+│  └─ .env                   # API Key 配置（备选）
 ├─ image/                     # 耄耋表情图片
 ├─ src/
 │  ├─ App.tsx                 # 主界面与业务逻辑
@@ -85,7 +92,7 @@ Knowledge/
 │  │  └─ knowledgeService.ts  # 三级分类 + 关键词权重匹配
 │  ├─ types.ts                # 类型定义
 │  └─ main.tsx                # React 入口
-├─ .env                       # 前端环境变量（后端地址）
+├─ .env                       # 环境变量（API Key 推荐位置）
 ├─ package.json               # 前端 NPM 配置
 └─ README.md                  # 使用说明（当前文件）
 ```
