@@ -15,6 +15,12 @@ const SYSTEM_PROMPT =
 type PipelineStage = "idle" | "knowledge" | "deepseek" | "error";
 type AssistantMood = "happy" | "confused" | "admin" | "angry";
 
+interface Heart {
+  id: string;
+  x: number;
+  y: number;
+}
+
 const stageLabelMap: Record<PipelineStage, string> = {
   idle: "小猫想和你聊天",
   knowledge: "正在翻资料的说",
@@ -68,16 +74,19 @@ function App() {
   const [isLoading, setIsLoading] = useState(false); // 加载状态
   const [questionCount, setQuestionCount] = useState(0); // 对话的伦次
   const [assistantMood, setAssistantMood] = useState<AssistantMood>("happy"); // 图标切换
-  const [hearts, setHearts] = useState<string[]>([]); // 小心心控制
+  const [hearts, setHearts] = useState<Heart[]>([]); // 小心心控制
   const [showEaster, setShowEaster] = useState(false); // 丘比龙
   const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);  // 多轮对话开关
   const messageEndRef = useRef<HTMLDivElement | null>(null); // 滚动到底部引用
 
   const spawnHeart = () => {
     const id = createMessageId();
-    setHearts((prev) => [...prev, id]);
+    // 随机偏移量，范围 -50px 到 50px
+    const x = Math.random() * 100 - 50;
+    const y = Math.random() * 100 - 50;
+    setHearts((prev) => [...prev, { id, x, y }]);
     setTimeout(() => {
-      setHearts((prev) => prev.filter((h) => h !== id));
+      setHearts((prev) => prev.filter((h) => h.id !== id));
     }, 2000);
   };
 
@@ -281,8 +290,17 @@ function App() {
 
       <main className="chat-shell">
         <div className="heart-layer" aria-hidden>
-          {hearts.map((id) => (
-            <span key={id} className="floating-heart">❤</span>
+          {hearts.map((heart) => (
+            <span
+              key={heart.id}
+              className="floating-heart"
+              style={{
+                marginLeft: `${heart.x}px`,
+                marginTop: `${heart.y}px`,
+              }}
+            >
+              ❤
+            </span>
           ))}
         </div>
 
