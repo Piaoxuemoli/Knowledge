@@ -16,38 +16,110 @@ body {
     BlinkMacSystemFont,
     "Helvetica Neue",
     sans-serif;
-  background: radial-gradient(
-    circle at top,
-    #f7f9ff 0%,
-    #e5ebff 45%,
-    #f0f4ff 100%
-  );
+  background-color: #343541; /* 统一背景色 */
   min-height: 100vh;
-  color: #1c2333;
+  color: #ececf1; /* 统一文字颜色 */
+  overflow: hidden; /* 防止body滚动 */
 }
 
 .app {
-  min-height: 100vh;
   display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f0f2f5;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #202123;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.new-chat-btn {
+  background-color: transparent;
+  border: 1px solid #565869;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 20px;
+  transition: background 0.2s;
+}
+
+.new-chat-btn:hover {
+  background-color: #2a2b32;
+}
+
+.session-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.session-item {
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  padding: 40px 24px 32px;
+  font-size: 14px;
+  color: #ececf1;
+}
+
+.session-item:hover {
+  background-color: #2a2b32;
+}
+
+.session-item.active {
+  background-color: #343541;
+}
+
+.session-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #8e8ea0;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 5px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.session-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  color: #ff4d4f;
 }
 
 .chat-shell {
-  position: relative;
-  width: min(960px, 100%);
-  min-height: 70vh;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  max-width: 100%;
+  background-color: #343541; /* 浅黑背景 */
+  color: #ececf1; /* 浅色文字 */
+  position: relative;
   gap: 24px;
   padding: 32px;
-  background: rgba(255, 255, 255, 0.88);
-  border-radius: 32px;
-  box-shadow: 0 30px 60px -20px rgba(42, 64, 128, 0.25);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(132, 156, 255, 0.25);
 }
 
 .chat-header {
@@ -69,11 +141,12 @@ body {
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 0.2px;
+  color: #ececf1; /* 标题颜色 */
 }
 
 .chat-subtitle {
   margin: 0;
-  color: #5d6995;
+  color: #c5c5d2; /* 副标题颜色 */
   font-size: 15px;
   line-height: 1.5;
 }
@@ -114,23 +187,23 @@ body {
 }
 
 .status-idle {
-  background: rgba(180, 196, 255, 0.28);
-  color: #3144a4;
+  background: rgba(180, 196, 255, 0.15);
+  color: #d0d7ff;
 }
 
 .status-knowledge {
-  background: rgba(138, 200, 255, 0.28);
-  color: #156c9a;
+  background: rgba(138, 200, 255, 0.15);
+  color: #a6d6ff;
 }
 
 .status-deepseek {
-  background: rgba(174, 186, 255, 0.32);
-  color: #3a3fb6;
+  background: rgba(174, 186, 255, 0.15);
+  color: #d4d9ff;
 }
 
 .status-error {
-  background: rgba(255, 151, 151, 0.3);
-  color: #9f1d1d;
+  background: rgba(255, 151, 151, 0.15);
+  color: #ffcaca;
 }
 
 .chat-messages {
@@ -180,10 +253,11 @@ body {
 
 .message-assistant {
   margin-right: auto;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(139, 162, 255, 0.24);
-  box-shadow: 0 12px 28px -18px rgba(39, 67, 171, 0.35);
-  border-bottom-left-radius: 6px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #ececf1;
+  padding: 18px 0; /* 去掉左右内边距，使其看起来像纯文本 */
 }
 
 .message-meta {
@@ -198,8 +272,8 @@ body {
 .message-badge {
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(118, 199, 255, 0.25);
-  color: #1a5c88;
+  background: rgba(118, 199, 255, 0.15);
+  color: #8ac5ff;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.4px;
@@ -231,14 +305,15 @@ body {
 .chat-textarea {
   width: 100%;
   border-radius: 18px;
-  border: 1px solid rgba(132, 156, 255, 0.35);
+  border: 1px solid #565869;
   padding: 16px 18px;
   font-family: inherit;
   font-size: 15px;
-  background: rgba(255, 255, 255, 0.95);
-  resize: vertical;
-  min-height: 120px;
-  max-height: 240px;
+  background: #40414f;
+  color: #ececf1;
+  resize: none; /* 禁止调整大小，由容器控制 */
+  min-height: 60px;
+  max-height: 200px;
   transition:
     border 0.2s ease,
     box-shadow 0.2s ease;
@@ -246,8 +321,8 @@ body {
 
 .chat-textarea:focus {
   outline: none;
-  border-color: rgba(88, 121, 255, 0.75);
-  box-shadow: 0 0 0 4px rgba(117, 146, 255, 0.2);
+  border-color: #19c37d;
+  box-shadow: 0 0 0 2px rgba(25, 195, 125, 0.2);
 }
 
 .chat-actions {
@@ -274,14 +349,14 @@ body {
 }
 
 .toggle-label {
-  color: #5d6995;
+  color: #c5c5d2;
   font-size: 14px;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .multi-turn-toggle:hover .toggle-label {
-  color: #3a4c7f;
+  color: #ececf1;
 }
 
 .send-button {

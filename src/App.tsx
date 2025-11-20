@@ -7,6 +7,7 @@ import { findBestKnowledgeMatch } from "./services/knowledgeService";
 import type { ChatMessage, KnowledgeItem } from "./types";
 import { miaoHappy, miaoConfused, miaoAngry, miaoAdmin } from "./assets";
 import qbClap from "../image/丘比拍手.gif";
+import { useChatHistory } from "./hooks/useChatHistory";
 
 const SYSTEM_PROMPT =
   "你是一名耐心的智能聊天助手，会参考用户提供的对话历史，使用清晰、友好以及少量的傲娇猫娘的语气回答。若问题涉及用户本地知识库提供的答案，应优先沿用该答案的表述。每句话结尾都要有喵。";
@@ -52,15 +53,16 @@ const normalizeWhitespace = (value: string) =>
 const createMessageId = () => crypto.randomUUID();
 
 function App() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: createMessageId(),
-      role: "assistant",
-      content:
-        "你好喵！本喵是你的知识助手。输入问题后我会结合本地知识库的内容回答你愚蠢的问题喵！",
-      source: "deepseek",
-    },
-  ]);
+  const {
+    sessions,
+    currentSessionId,
+    currentMessages: messages,
+    setCurrentSessionId,
+    createNewSession,
+    updateCurrentSessionMessages: setMessages,
+    deleteSession,
+  } = useChatHistory(); // 会话历史管理的自定义hooks
+
   const [inputValue, setInputValue] = useState(""); // 输入框内容
   const [pipelineStage, setPipelineStage] = useState<PipelineStage>("idle"); // 来源标识
   const [isLoading, setIsLoading] = useState(false); // 加载状态
@@ -99,7 +101,7 @@ function App() {
       setShowEaster((prev) => !prev);
       setInputValue("");
       return;
-    }
+    }   // 特殊彩蛋
 
     if (!trimmedContent) {
       setInputValue("");
@@ -238,7 +240,7 @@ function App() {
         content: "你这样的小猫还无权问我这样的问题",
       };
 
-      setMessages((prev) => [...prev, failureReply]);
+      setMessages([...nextMessagesAfterUser, failureReply]);
       setPipelineStage("error");
       setAssistantMood("admin");
       console.error(error);
@@ -251,6 +253,32 @@ function App() {
 
   return (
     <div className="app">
+      <aside className="sidebar">
+        <button className="new-chat-btn" onClick={createNewSession}>
+          + 新建对话
+        </button>
+        <div className="session-list">
+          {sessions.map((session) => (
+            <div
+              key={session.id}
+              className={`session-item ${
+                session.id === currentSessionId ? "active" : ""
+              }`}
+              onClick={() => setCurrentSessionId(session.id)}
+            >
+              <span className="session-title">{session.title}</span>
+              <button
+                className="delete-btn"
+                onClick={(e) => deleteSession(e, session.id)}
+                title="删除对话"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      </aside>
+
       <main className="chat-shell">
         <div className="heart-layer" aria-hidden>
           {hearts.map((id) => (
