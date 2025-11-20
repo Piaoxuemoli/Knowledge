@@ -35,8 +35,8 @@ export async function callDeepseek(
 ): Promise<string> {
   const {
     model = "deepseek-chat",
-    temperature = 0.6,
-    maxTokens = 1024,
+    temperature = 0.1,
+    maxTokens = 8192,
   } = config;
 
   const requestBody: DeepseekChatPayload = {
