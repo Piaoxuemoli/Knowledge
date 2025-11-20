@@ -2,8 +2,13 @@
 
 一个用于练习的 React + TypeScript 前端项目，展示“本地知识库优先 + DeepSeek 兜底”的多轮对话流程，并加入了傲娇猫娘人格以及耄耋系列情绪插图。
 
+## 界面展示
+
+![1763629581381](image/README/1763629581381.png)
+
 ## 功能亮点
 
+- **侧边栏历史记录**：支持新建、删除会话，自动保存聊天记录到本地（LocalStorage），刷新不丢失。
 - **多轮对话开关（最多5轮）**：可一键开启真实多轮对话，维护最近 5 轮上下文（第 6 轮起滚动淘汰最早一轮）；关闭时为独立问答。
 - **三级知识库 + 智能匹配**：`src/knowledgeBase.json` 采用“领域/子领域/问答”三级结构，并基于关键词权重 + 问题相似度综合匹配，优先返回本地答案。
 - **后端安全代理 DeepSeek**：由 `server/server.js` 代理调用 DeepSeek，API Key 安全存放在 `server/.env`，前端不再暴露密钥。
@@ -57,6 +62,8 @@ Knowledge/
 │  ├─ App.tsx                 # 主界面与业务逻辑
 │  ├─ App.css                 # 样式（玻璃拟态 + 猫猫元素）
 │  ├─ assets/index.ts         # 表情图片导出
+│  ├─ hooks/                  # 自定义 Hooks
+│  │  └─ useChatHistory.ts    # 聊天记录管理（LocalStorage）
 │  ├─ knowledgeBase.json      # 三级分类知识库（领域/子领域/问答）
 │  ├─ knowledgeSample.ts      # 空库时的占位样例
 │  ├─ services/
