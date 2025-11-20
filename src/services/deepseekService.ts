@@ -1,3 +1,12 @@
+// 声明 window 上的 electronAPI 类型
+declare global {
+  interface Window {
+    electronAPI?: {
+      chatWithDeepseek: (messages: DeepseekMessage[]) => Promise<string>;
+    };
+  }
+}
+
 // 使用本地后端代理，不再直接调用 DeepSeek API
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -33,6 +42,18 @@ export async function callDeepseek(
   conversationMessages: DeepseekMessage[],
   config: DeepseekConfig,
 ): Promise<string> {
+  // 1. 优先检查是否在 Electron 环境中
+  if (window.electronAPI) {
+    try {
+      console.log("Using Electron IPC for DeepSeek API");
+      return await window.electronAPI.chatWithDeepseek(conversationMessages);
+    } catch (error) {
+      console.error("Electron IPC Error:", error);
+      throw error;
+    }
+  }
+
+  // 2. 如果不是 Electron，回退到原来的 HTTP 请求逻辑
   const {
     model = "deepseek-chat",
     temperature = 0.1,

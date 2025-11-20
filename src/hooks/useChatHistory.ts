@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ChatMessage, ChatSession } from "../types";
 
 const STORAGE_KEY = "cat_chat_sessions";
@@ -6,9 +6,13 @@ const STORAGE_KEY = "cat_chat_sessions";
 export function useChatHistory() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const isInitialized = useRef(false);
 
   // 1. 初始化加载
   useEffect(() => {
+    if (isInitialized.current) return;
+    isInitialized.current = true;
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) { // 如果之前有储存的历史记录，就加载出来
       try {

@@ -2,17 +2,21 @@
   "name": "knowledge",
   "private": true,
   "version": "0.0.0",
+  "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:server": "cd server && npm run dev",
     "dev:all": "concurrently \"npm run dev:server\" \"npm run dev\" --names \"server,client\" --prefix-colors \"blue,green\"",
+    "electron": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "tsc -b && vite build && electron-builder",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\""
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
@@ -23,12 +27,38 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
     "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^39.2.3",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.45.0",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.knowledge.app",
+    "productName": "KnowledgeAssistant",
+    "directories": {
+      "output": "release_v1"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      ".env",
+      "server/.env",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/zhenji.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

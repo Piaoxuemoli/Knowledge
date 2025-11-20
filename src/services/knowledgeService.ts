@@ -1,4 +1,4 @@
-import type { KnowledgeItem, FirstLevelCategory, SecondLevelCategory, ThirdLevelKnowledge } from "../types";
+import type { KnowledgeItem, FirstLevelCategory, ThirdLevelKnowledge } from "../types";
 import knowledgeBaseJson from "../knowledgeBase.clean.json";
 import { knowledgeBasePlaceholder } from "../knowledgeSample";
 
@@ -128,11 +128,11 @@ export function findBestKnowledgeMatch(
   } | null = null;
   
   // 遍历所有分类
-  categories.forEach(category => {
+  for (const category of categories) {
     // 计算一级分类关键词匹配得分
     const categoryScore = calculateKeywordScore(question, category.keywords);
     
-    category.subcategories.forEach(subcategory => {
+    for (const subcategory of category.subcategories) {
       // 计算二级分类关键词匹配得分
       const subcategoryScore = calculateKeywordScore(question, subcategory.keywords);
       
@@ -140,7 +140,7 @@ export function findBestKnowledgeMatch(
       const categoryBonus = categoryScore * 0.4 + subcategoryScore * 0.6;
       
       // 在该二级分类下匹配具体问题
-      subcategory.items.forEach(item => {
+      for (const item of subcategory.items) {
         const questionScore = calculateSimilarityScore(question, item.question);
         
         // 最终得分：加大分类匹配的影响，适配中文场景
@@ -154,9 +154,9 @@ export function findBestKnowledgeMatch(
             score: finalScore
           };
         }
-      });
-    });
-  });
+      }
+    }
+  }
   
   // 如果找到匹配且得分超过阈值
   if (bestMatch && bestMatch.score >= threshold) {
