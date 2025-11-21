@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import "./App.css";
+import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import { callDeepseek, type DeepseekConfig } from "./services/deepseekService";
 import type { DeepseekMessage } from "./services/deepseekService";
 import { findBestKnowledgeMatch } from "./services/knowledgeService";
@@ -77,7 +78,7 @@ function App() {
   const [hearts, setHearts] = useState<Heart[]>([]); // 小心心控制
   const [showEaster, setShowEaster] = useState(false); // 丘比龙
   const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);  // 多轮对话开关
-  const messageEndRef = useRef<HTMLDivElement | null>(null); // 滚动到底部引用
+  const virtuosoRef = useRef<VirtuosoHandle>(null); // 虚拟滚动引用
 
   const spawnHeart = () => {
     const id = createMessageId();
@@ -88,11 +89,11 @@ function App() {
     setTimeout(() => {
       setHearts((prev) => prev.filter((h) => h.id !== id));
     }, 2000);
-  };
+  };  // 在限定的圆内随机生成爱心
 
-  useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  // useEffect(() => {
+  //   messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]); // 滚动到底部
 
   const deepseekConfig = useMemo<DeepseekConfig>(
     () => ({
@@ -294,9 +295,11 @@ function App() {
             <span
               key={heart.id}
               className="floating-heart"
-              style={{
-                marginLeft: `${heart.x}px`,
-                marginTop: `${heart.y}px`,
+              ref={(el) => {
+                if (el) {
+                  el.style.setProperty("--heart-x", `${heart.x}px`);
+                  el.style.setProperty("--heart-y", `${heart.y}px`);
+                }
               }}
             >
               ❤
@@ -334,31 +337,38 @@ function App() {
         </header>
 
         <section className="chat-messages" aria-live="polite">
-          {messages.map((message) => {
-            const isUser = message.role === "user";
-            const badgeText =
-              message.source === "knowledge-base"
-                ? "来自知识库"
-                : message.source === "deepseek"
-                  ? "哈基米"
-                  : undefined;
+          <Virtuoso
+            ref={virtuosoRef}
+            className="virtuoso-container"
+            data={messages}
+            initialTopMostItemIndex={messages.length - 1}
+            followOutput="auto"
+            alignToBottom
+            itemContent={(_index, message) => {
+              const isUser = message.role === "user";
+              const badgeText =
+                message.source === "knowledge-base"
+                  ? "来自知识库"
+                  : message.source === "deepseek"
+                    ? "哈基米"
+                    : undefined;
 
-            return (
-              <article
-                key={message.id}
-                className={`message ${isUser ? "message-user" : "message-assistant"}`}
-              >
-                <div className="message-meta">
-                  <span className="message-role">{isUser ? "你" : "助手"}</span>
-                  {badgeText ? (
-                    <span className="message-badge">{badgeText}</span>
-                  ) : null}
-                </div>
-                <p className="message-content">{message.content}</p>
-              </article>
-            );
-          })}
-          <div ref={messageEndRef} />
+              return (
+                <article
+                  key={message.id}
+                  className={`message ${isUser ? "message-user" : "message-assistant"}`}
+                >
+                  <div className="message-meta">
+                    <span className="message-role">{isUser ? "你" : "助手"}</span>
+                    {badgeText ? (
+                      <span className="message-badge">{badgeText}</span>
+                    ) : null}
+                  </div>
+                  <p className="message-content">{message.content}</p>
+                </article>
+              );
+            }}
+          />
         </section>
 
         <form className="chat-input-panel" onSubmit={handleSubmit}>

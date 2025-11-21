@@ -208,11 +208,15 @@ body {
 
 .chat-messages {
   flex: 1;
+  overflow: hidden; /* 让 Virtuoso 处理滚动 */
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-  padding-right: 4px;
+  position: relative; /* 确保子元素定位正确 */
+}
+
+.virtuoso-container {
+  height: 100%;
 }
 
 .chat-messages::-webkit-scrollbar {
@@ -229,14 +233,14 @@ body {
 }
 
 .message {
-  max-width: 70ch;
-  padding: 18px 20px;
-  border-radius: 20px;
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  animation: fadeInUp 200ms ease;
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  position: relative;
+  animation: fadeIn 0.3s ease-out;
+  margin-bottom: 1rem;
 }
 
 .message-user {
@@ -390,12 +394,12 @@ body {
   box-shadow: 0 12px 28px -18px rgba(50, 88, 232, 0.65);
 }
 
-@keyframes fadeInUp {
-  from {
+@keyframes fadeIn {
+  0% {
     opacity: 0;
     transform: translateY(12px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
@@ -415,10 +419,15 @@ body {
 
 .floating-heart {
   position: absolute;
-  font-size: 28px;
-  color: #ff3b3b;
-  text-shadow: 0 8px 20px rgba(255, 59, 59, 0.45);
-  animation: popFade 2s ease forwards;
+  left: 50%;
+  top: 50%;
+  font-size: 24px;
+  color: #ff6b6b;
+  pointer-events: none;
+  animation: floatHeart 2s ease-out forwards;
+  z-index: 1000;
+  margin-left: var(--heart-x);
+  margin-top: var(--heart-y);
 }
 
 @keyframes popFade {
