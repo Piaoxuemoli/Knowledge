@@ -6,12 +6,12 @@ const STORAGE_KEY = "cat_chat_sessions";
 export function useChatHistory() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const isInitialized = useRef(false);
+  const isInitialized = useRef(false);  // 用于防止重复初始化
 
   // 1. 初始化加载
   useEffect(() => {
-    if (isInitialized.current) return;
-    isInitialized.current = true;
+    if (isInitialized.current) return;  // 已经初始化过就不再执行
+    isInitialized.current = true; // 标记为已初始化
 
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) { // 如果之前有储存的历史记录，就加载出来

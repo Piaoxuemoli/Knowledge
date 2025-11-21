@@ -53,7 +53,7 @@ app.on('window-all-closed', () => {
 });
 
 // 处理 DeepSeek API 请求 (替代 server.js)
-ipcMain.handle('deepseek-chat', async (event, messages) => {
+ipcMain.handle('deepseek-chat', async (event, messages) => {  // 监听渲染进程消息
   if (!DEEPSEEK_API_KEY) {
     throw new Error("API Key 未配置，请检查 .env 文件");
   }

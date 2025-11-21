@@ -38,7 +38,7 @@ export interface DeepseekConfig {
   maxTokens?: number;
 }
 
-export async function callDeepseek(
+export async function callDeepseek( // 解决UI复用问题，同时支持Electron和Web环境
   conversationMessages: DeepseekMessage[],
   config: DeepseekConfig,
 ): Promise<string> {
