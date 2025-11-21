@@ -80,18 +80,20 @@ Knowledge/
 │  └─ .env                   # API Key 配置（备选）
 ├─ image/                     # 耄耋表情图片
 ├─ src/
-│  ├─ App.tsx                 # 主界面与业务逻辑
-│  ├─ App.css                 # 样式（玻璃拟态 + 猫猫元素）
-│  ├─ assets/index.ts         # 表情图片导出
+│  ├─ assets/                 # 静态资源
+│  │  └─ index.ts            # 资源导出
 │  ├─ hooks/                  # 自定义 Hooks
-│  │  └─ useChatHistory.ts    # 聊天记录管理（LocalStorage）
-│  ├─ knowledgeBase.json      # 三级分类知识库（领域/子领域/问答）
-│  ├─ knowledgeSample.ts      # 空库时的占位样例
-│  ├─ services/
-│  │  ├─ deepseekService.ts   # 调用后端代理接口
-│  │  └─ knowledgeService.ts  # 三级分类 + 关键词权重匹配
-│  ├─ types.ts                # 类型定义
-│  └─ main.tsx                # React 入口
+│  │  └─ useChatHistory.ts    # 聊天记录管理
+│  ├─ services/               # 业务服务
+│  │  ├─ deepseekService.ts   # DeepSeek API 调用
+│  │  └─ knowledgeService.ts  # 知识库匹配逻辑
+│  ├─ App.css                 # 组件样式
+│  ├─ App.tsx                 # 主应用组件
+│  ├─ index.css               # 全局样式
+│  ├─ knowledgeBase.json      # 本地知识库数据
+│  ├─ knowledgeSample.ts      # 知识库占位数据
+│  ├─ main.tsx                # 入口文件
+│  └─ types.ts                # TypeScript 类型定义
 ├─ .env                       # 环境变量（API Key 推荐位置）
 ├─ package.json               # 前端 NPM 配置
 └─ README.md                  # 使用说明（当前文件）
