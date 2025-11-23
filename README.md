@@ -6,18 +6,20 @@
 
 ![1763654487044](image/README/1763654487044.png)
 
-## 功能亮点
+# 功能亮点
 
 - **侧边栏历史记录**：支持新建、删除会话，自动保存聊天记录到本地（LocalStorage），刷新不丢失。
 - **多轮对话开关（最多5轮）**：可一键开启真实多轮对话，维护最近 5 轮上下文（第 6 轮起滚动淘汰最早一轮）；关闭时为独立问答。
-- **三级知识库 + 智能匹配**：`src/knowledgeBase.json` 采用“领域/子领域/问答”三级结构，并基于关键词权重 + 问题相似度综合匹配，优先返回本地答案。
+- **三级知识库 + 智能匹配**：`src/knowledgeBase.json` 采用"领域/子领域/问答"三级结构，并基于关键词权重 + 问题相似度综合匹配，优先返回本地答案。
 - **双模式运行**：支持 Web 浏览器模式（需启动后端服务）和 Electron 桌面客户端模式（内置 IPC 通信）。
 - **后端安全代理 DeepSeek**：
   - **Web 模式**：由 `server/server.js` 代理调用 DeepSeek。
   - **Electron 模式**：通过 IPC 通信由主进程直接调用，API Key 安全存放在本地环境。
-- **情绪插画**：根据状态切换“耄耋送花/疑惑/行政/愤怒”插图。
+- **全局主题切换**：支持深色/浅色主题切换（🌙/☀️），所有 UI 元素自动适配，使用 React Context 实现全局状态管理。
+- **API 配置管理**：用户可通过齿轮按钮（⚙️）自定义 API Key 和 Base URL，支持实时验证和持久化存储，Web/Electron 双模式统一管理。
+- **情绪插画**：根据状态切换"耄耋送花/疑惑/行政/愤怒"插图。
 - **川剧机制**：连续提问超过 5 次会触发耄耋愤怒表情。
-- **隐藏彩蛋**：试着问问“你的创造者是谁”，也许会有惊喜哦！
+- **隐藏彩蛋**：试着问问"你的创造者是谁"，也许会有惊喜哦！
 
 ## 快速开始
 
@@ -71,11 +73,11 @@ npm run dev:all
 ```text
 Knowledge/
 ├─ electron/                  # Electron 主进程与预加载脚本
-│  ├─ main.cjs               # 主进程入口
-│  └─ preload.cjs            # 预加载脚本 (IPC)
+│  ├─ main.cjs               # 主进程入口 (支持 API 配置管理)
+│  └─ preload.cjs            # 预加载脚本 (IPC 通信桥)
 ├─ release_v1/                # 打包输出目录
 ├─ server/                    # 后端代理服务器 (Web模式用)
-│  ├─ server.js              # 简单的 Express 服务器
+│  ├─ server.js              # Express 服务器 (支持动态 API 配置)
 │  ├─ package.json           # 后端依赖
 │  └─ .env                   # API Key 配置（备选）
 ├─ image/                     # 耄耋表情图片
@@ -85,10 +87,11 @@ Knowledge/
 │  ├─ hooks/                  # 自定义 Hooks
 │  │  └─ useChatHistory.ts    # 聊天记录管理
 │  ├─ services/               # 业务服务
-│  │  ├─ deepseekService.ts   # DeepSeek API 调用
-│  │  └─ knowledgeService.ts  # 知识库匹配逻辑
-│  ├─ App.css                 # 组件样式
-│  ├─ App.tsx                 # 主应用组件
+│  │  ├─ deepseekService.ts   # DeepSeek API 调用（支持 Web/Electron）
+│  │  ├─ knowledgeService.ts  # 知识库匹配逻辑
+│  │  └─ apiConfigService.ts  # API 配置管理（统一 Web/Electron）
+│  ├─ App.css                 # 组件样式（含主题切换、模态框、Toast）
+│  ├─ App.tsx                 # 主应用组件（含 API 设置弹窗）
 │  ├─ index.css               # 全局样式
 │  ├─ knowledgeBase.json      # 本地知识库数据
 │  ├─ knowledgeSample.ts      # 知识库占位数据
@@ -107,14 +110,10 @@ Knowledge/
 
 ## 待完成任务列表
 
-1. 实现流式输出效果
-
-2. 实现全局的主题切换，采用useContext
-
-3. 支持用户自定义API，同时修复显示的api
-
-4. 支持用户上传个性化文档作为数据库，调用api实现数据库的部署（调用api采用固定的prompt去处理长文本然后变为数据库格式）
-
-5. 支持调用windows原生弹窗在左下角增加界面隐匿时的任务完成提醒
+- [ ] 1. 实现流式输出效果
+- [x] 2. 实现全局的主题切换，采用 useContext，React.createContext
+- [x] 3. 支持用户自定义 API Key 和 Base URL（含实时验证）
+- [ ] 4. 支持用户上传个性化文档作为数据库，调用 API 实现数据库的部署（调用 API 采用固定的 prompt 去处理长文本然后变为数据库格式）
+- [ ] 5. 支持调用 Windows 原生弹窗在左下角增加界面隐匿时的任务完成提醒
 
 希望你会喜欢这个项目喵！
