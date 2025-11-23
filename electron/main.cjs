@@ -136,13 +136,25 @@ ipcMain.handle('validate-api-key', async (event, { apiKey, baseUrl }) => {
       },
       body: JSON.stringify({
         model: 'deepseek-chat',
-        messages: [{ role: 'user', content: 'test' }],
-        stream: false
+        messages: [
+          {
+            role: 'user',
+            content: '你是什么模型,请你一句话简短介绍以下自己'
+          }
+        ],
+        stream: false,
+        max_tokens: 100,
+        temperature: 0.7
       })
     });
 
     if (testResponse.ok) {
-      return { valid: true };
+      const data = await testResponse.json();
+      const reply = data.choices?.[0]?.message?.content || '验证成功';
+      return { 
+        valid: true,
+        message: reply
+      };
     } else {
       const errorData = await testResponse.json();
       return { 
@@ -154,7 +166,7 @@ ipcMain.handle('validate-api-key', async (event, { apiKey, baseUrl }) => {
     console.error('验证 API Key 错误:', error);
     return { 
       valid: false, 
-      error: '无法连接到 API 服务器' 
+      error: '无法连接到 API 服务器，请检查 Base URL 是否正确' 
     };
   }
 });

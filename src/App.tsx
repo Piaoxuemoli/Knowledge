@@ -157,11 +157,19 @@ function App() {
         return;
       }
 
-      // 验证成功，保存配置
+      // 验证成功，显示模型回复
+      if (validationResult.message) {
+        showToast(`✅ ${validationResult.message}`, 'success');
+      }
+
+      // 保存配置
       const updateResult = await updateApiConfig({ apiKey, baseUrl });
       
       if (updateResult.success) {
-        showToast('配置保存成功！', 'success');
+        // 稍后显示保存成功提示
+        setTimeout(() => {
+          showToast('💾 配置已保存', 'success');
+        }, 500);
         setShowApiSettings(false);
       } else {
         showToast(updateResult.error || '保存失败', 'error');

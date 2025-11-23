@@ -10,6 +10,7 @@ export interface ApiConfig {
 export interface ValidationResult {
   valid: boolean;
   error?: string;
+  message?: string;
 }
 
 export interface UpdateResult {
@@ -39,7 +40,8 @@ export async function validateApiKey(config: ApiConfig): Promise<ValidationResul
     body: JSON.stringify(config),
   });
   
-  return await response.json();
+  const result = await response.json();
+  return result;
 }
 
 // 更新 API 配置
