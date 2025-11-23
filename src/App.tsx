@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import "./App.css";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
@@ -21,6 +21,8 @@ interface Heart {
   x: number;
   y: number;
 }
+
+
 
 const stageLabelMap: Record<PipelineStage, string> = {
   idle: "小猫想和你聊天",
@@ -57,7 +59,13 @@ const assistantMoodAssets: Record<
 
 const normalizeWhitespace = (value: string) =>
   value.replace(/\s+/g, " ").trim();
-const createMessageId = () => crypto.randomUUID();
+const createMessageId = () => crypto.randomUUID(); 
+
+const MyTheme = React.createContext({} as ThemeOptions); // 全局主题设置
+interface ThemeOptions{
+  theme: string;
+  setTheme: (theme: string) => void;
+} // 主题选项接口
 
 function App() {
   const {
@@ -78,7 +86,12 @@ function App() {
   const [hearts, setHearts] = useState<Heart[]>([]); // 小心心控制
   const [showEaster, setShowEaster] = useState(false); // 丘比龙
   const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);  // 多轮对话开关
+  const [theme, setTheme] = useState("dark"); // 主题状态
   const virtuosoRef = useRef<VirtuosoHandle>(null); // 虚拟滚动引用
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   const spawnHeart = () => {
     const id = createMessageId();
@@ -262,8 +275,9 @@ function App() {
   const assistantMoodAsset = assistantMoodAssets[assistantMood];
 
   return (
-    <div className="app">
-      <aside className="sidebar">
+    <MyTheme value={{ theme, setTheme }}>
+      <div className="app" data-theme={theme}>
+        <aside className="sidebar">
         <button className="new-chat-btn" onClick={createNewSession}>
           + 新建对话
         </button>
@@ -323,6 +337,9 @@ function App() {
             </p>
           </div>
           <div className="chat-header-side">
+            <button className="theme-toggle-btn" onClick={toggleTheme} title="切换主题">
+              {theme === "dark" ? "🌙" : "☀️"}
+            </button>
             <span className={`status-badge status-${pipelineStage}`}>
               {stageLabelMap[pipelineStage]}
             </span>
@@ -404,7 +421,8 @@ function App() {
           </div>
         </form>
       </main>
-    </div>
+      </div>
+    </MyTheme>
   );
 }
 
