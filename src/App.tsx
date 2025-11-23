@@ -1,10 +1,11 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import type { FormEvent } from "react";
 import "./App.css";
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import { callDeepseek, type DeepseekConfig } from "./services/deepseekService";
 import type { DeepseekMessage } from "./services/deepseekService";
 import { findBestKnowledgeMatch } from "./services/knowledgeService";
+import { validateApiKey, updateApiConfig, getApiConfig } from "./services/apiConfigService";
 import type { ChatMessage, KnowledgeItem } from "./types";
 import { miaoHappy, miaoConfused, miaoAngry, miaoAdmin } from "./assets";
 import qbClap from "../image/丘比拍手.gif";
@@ -15,6 +16,14 @@ const SYSTEM_PROMPT =
 
 type PipelineStage = "idle" | "knowledge" | "deepseek" | "error";
 type AssistantMood = "happy" | "confused" | "admin" | "angry";
+
+type ToastType = "success" | "error";
+
+interface Toast {
+  id: string;
+  message: string;
+  type: ToastType;
+}
 
 interface Heart {
   id: string;
@@ -59,7 +68,7 @@ const assistantMoodAssets: Record<
 
 const normalizeWhitespace = (value: string) =>
   value.replace(/\s+/g, " ").trim();
-const createMessageId = () => crypto.randomUUID(); 
+const createMessageId = () => crypto.randomUUID();
 
 const MyTheme = React.createContext({} as ThemeOptions); // 全局主题设置
 interface ThemeOptions{
@@ -87,10 +96,79 @@ function App() {
   const [showEaster, setShowEaster] = useState(false); // 丘比龙
   const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);  // 多轮对话开关
   const [theme, setTheme] = useState("dark"); // 主题状态
+  const [showApiSettings, setShowApiSettings] = useState(false); // API 设置弹窗
+  const [apiKey, setApiKey] = useState(""); // API Key
+  const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com"); // Base URL
+  const [toasts, setToasts] = useState<Toast[]>([]); // Toast 提示列表
   const virtuosoRef = useRef<VirtuosoHandle>(null); // 虚拟滚动引用
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  // Toast 提示功能
+  const showToast = (message: string, type: ToastType) => {
+    const id = createMessageId();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3000);
+  };
+
+  // 加载当前 API 配置
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await getApiConfig();
+        if (config.apiKey) setApiKey(config.apiKey);
+        if (config.baseUrl) setBaseUrl(config.baseUrl);
+      } catch (error) {
+        console.error('加载 API 配置失败:', error);
+      }
+    };
+    loadConfig();
+  }, []);
+
+  // 打开 API 设置弹窗
+  const handleOpenApiSettings = async () => {
+    try {
+      const config = await getApiConfig();
+      if (config.apiKey) setApiKey(config.apiKey);
+      if (config.baseUrl) setBaseUrl(config.baseUrl);
+      setShowApiSettings(true);
+    } catch {
+      showToast('无法加载配置', 'error');
+    }
+  };
+
+  // 保存 API 配置
+  const handleSaveApiConfig = async () => {
+    if (!apiKey.trim() || !baseUrl.trim()) {
+      showToast('API Key 和 Base URL 不能为空', 'error');
+      return;
+    }
+
+    try {
+      // 先验证
+      const validationResult = await validateApiKey({ apiKey, baseUrl });
+      
+      if (!validationResult.valid) {
+        showToast(validationResult.error || 'API Key 验证失败', 'error');
+        return;
+      }
+
+      // 验证成功，保存配置
+      const updateResult = await updateApiConfig({ apiKey, baseUrl });
+      
+      if (updateResult.success) {
+        showToast('配置保存成功！', 'success');
+        setShowApiSettings(false);
+      } else {
+        showToast(updateResult.error || '保存失败', 'error');
+      }
+    } catch {
+      showToast('操作失败，请检查网络连接', 'error');
+    }
   };
 
   const spawnHeart = () => {
@@ -340,6 +418,9 @@ function App() {
             <button className="theme-toggle-btn" onClick={toggleTheme} title="切换主题">
               {theme === "dark" ? "🌙" : "☀️"}
             </button>
+            <button className="api-settings-btn" onClick={handleOpenApiSettings} title="API 设置">
+              ⚙️
+            </button>
             <span className={`status-badge status-${pipelineStage}`}>
               {stageLabelMap[pipelineStage]}
             </span>
@@ -421,6 +502,65 @@ function App() {
           </div>
         </form>
       </main>
+
+      {/* API 设置弹窗 */}
+      {showApiSettings && (
+        <div className="modal-overlay" onClick={() => setShowApiSettings(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2 className="modal-title">API 设置</h2>
+            <div className="modal-body">
+              <div className="form-group">
+                <label htmlFor="apiKey">API Key</label>
+                <input
+                  id="apiKey"
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="请输入 API Key"
+                  className="modal-input"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="baseUrl">Base URL</label>
+                <input
+                  id="baseUrl"
+                  type="text"
+                  value={baseUrl}
+                  onChange={(e) => setBaseUrl(e.target.value)}
+                  placeholder="https://api.deepseek.com"
+                  className="modal-input"
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                className="modal-btn modal-btn-cancel" 
+                onClick={() => setShowApiSettings(false)}
+              >
+                取消
+              </button>
+              <button 
+                className="modal-btn modal-btn-save" 
+                onClick={handleSaveApiConfig}
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast 提示 */}
+      <div className="toast-container">
+        {toasts.map((toast) => (
+          <div key={toast.id} className={`toast toast-${toast.type}`}>
+            <span className="toast-icon">
+              {toast.type === 'success' ? '✓' : '✗'}
+            </span>
+            <span className="toast-message">{toast.message}</span>
+          </div>
+        ))}
+      </div>
       </div>
     </MyTheme>
   );

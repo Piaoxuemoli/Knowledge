@@ -3,6 +3,9 @@ declare global {
   interface Window {
     electronAPI?: {
       chatWithDeepseek: (messages: DeepseekMessage[]) => Promise<string>;
+      validateApiKey: (config: { apiKey: string; baseUrl: string }) => Promise<{ valid: boolean; error?: string }>;
+      updateApiConfig: (config: { apiKey: string; baseUrl: string }) => Promise<{ success: boolean; error?: string }>;
+      getApiConfig: () => Promise<{ apiKey: string; baseUrl: string; hasKey: boolean }>;
     };
   }
 }

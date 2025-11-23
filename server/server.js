@@ -7,7 +7,12 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+
+// API 配置（支持动态更新）
+let apiConfig = {
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
+};
 
 // 中间件
 app.use(cors());
@@ -22,7 +27,7 @@ app.get('/health', (req, res) => {
 app.post('/api/chat', async (req, res) => {
   try {
     // 检查 API Key
-    if (!DEEPSEEK_API_KEY) {
+    if (!apiConfig.apiKey) {
       return res.status(500).json({
         error: '服务器未配置 DEEPSEEK_API_KEY'
       });
@@ -38,11 +43,11 @@ app.post('/api/chat', async (req, res) => {
     }
 
     // 调用 DeepSeek API
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch(`${apiConfig.baseUrl}/v1/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        'Authorization': `Bearer ${apiConfig.apiKey}`
       },
       body: JSON.stringify({
         model,
@@ -72,7 +77,92 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// 验证 API Key 接口
+app.post('/api/validate-key', async (req, res) => {
+  try {
+    const { apiKey, baseUrl } = req.body;
+
+    if (!apiKey || !baseUrl) {
+      return res.status(400).json({
+        valid: false,
+        error: 'API Key 和 Base URL 不能为空'
+      });
+    }
+
+    // 发送测试请求验证 API Key
+    const testResponse = await fetch(`${baseUrl}/v1/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: 'test' }],
+        max_tokens: 10
+      })
+    });
+
+    if (testResponse.ok) {
+      res.json({ valid: true });
+    } else {
+      const errorData = await testResponse.json();
+      res.json({ 
+        valid: false, 
+        error: errorData.error?.message || 'API Key 验证失败' 
+      });
+    }
+  } catch (error) {
+    console.error('验证 API Key 错误:', error);
+    res.json({ 
+      valid: false, 
+      error: '无法连接到 API 服务器' 
+    });
+  }
+});
+
+// 更新 API 配置接口
+app.post('/api/update-config', async (req, res) => {
+  try {
+    const { apiKey, baseUrl } = req.body;
+
+    if (!apiKey || !baseUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'API Key 和 Base URL 不能为空'
+      });
+    }
+
+    // 更新配置
+    apiConfig.apiKey = apiKey;
+    apiConfig.baseUrl = baseUrl;
+
+    console.log('✅ API 配置已更新');
+    res.json({ success: true });
+  } catch (error) {
+    console.error('更新配置错误:', error);
+    res.status(500).json({
+      success: false,
+      error: '更新配置失败'
+    });
+  }
+});
+
+// 获取当前配置接口（隐藏完整 API Key）
+app.get('/api/config', (req, res) => {
+  const maskedKey = apiConfig.apiKey 
+    ? `${apiConfig.apiKey.slice(0, 8)}...${apiConfig.apiKey.slice(-4)}`
+    : '';
+  
+  res.json({
+    apiKey: maskedKey,
+    baseUrl: apiConfig.baseUrl,
+    hasKey: !!apiConfig.apiKey
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 服务器运行在 http://localhost:${PORT}`);
-  console.log(`✅ API Key 已配置: ${DEEPSEEK_API_KEY ? '是' : '否'}`);
+  console.log(`✅ API Key 已配置: ${apiConfig.apiKey ? '是' : '否'}`);
+  console.log(`🔗 Base URL: ${apiConfig.baseUrl}`);
 });

@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const dotenv = require('dotenv');
+const fs = require('fs');
 
 // 尝试加载环境变量
 // 优先加载根目录 .env，如果没有则尝试加载 server/.env
@@ -11,6 +12,44 @@ if (!process.env.DEEPSEEK_API_KEY) {
 
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
+
+// API 配置（支持动态更新）
+let apiConfig = {
+  apiKey: DEEPSEEK_API_KEY,
+  baseUrl: 'https://api.deepseek.com'
+};
+
+// 配置文件路径
+const getConfigPath = () => {
+  const userDataPath = app.getPath('userData');
+  return path.join(userDataPath, 'api-config.json');
+};
+
+// 加载保存的配置
+const loadSavedConfig = () => {
+  try {
+    const configPath = getConfigPath();
+    if (fs.existsSync(configPath)) {
+      const savedConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      if (savedConfig.apiKey) apiConfig.apiKey = savedConfig.apiKey;
+      if (savedConfig.baseUrl) apiConfig.baseUrl = savedConfig.baseUrl;
+      console.log('✅ 已加载保存的 API 配置');
+    }
+  } catch (error) {
+    console.error('加载配置失败:', error);
+  }
+};
+
+// 保存配置到文件
+const saveConfig = () => {
+  try {
+    const configPath = getConfigPath();
+    fs.writeFileSync(configPath, JSON.stringify(apiConfig, null, 2));
+    console.log('✅ API 配置已保存');
+  } catch (error) {
+    console.error('保存配置失败:', error);
+  }
+};
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -37,6 +76,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  loadSavedConfig(); // 启动时加载配置
   createWindow();
 
   app.on('activate', () => {
@@ -54,16 +94,16 @@ app.on('window-all-closed', () => {
 
 // 处理 DeepSeek API 请求 (替代 server.js)
 ipcMain.handle('deepseek-chat', async (event, messages) => {  // 监听渲染进程消息
-  if (!DEEPSEEK_API_KEY) {
-    throw new Error("API Key 未配置，请检查 .env 文件");
+  if (!apiConfig.apiKey) {
+    throw new Error("API Key 未配置，请检查 .env 文件或在设置中配置");
   }
 
   try {
-    const response = await fetch(DEEPSEEK_API_URL, {
+    const response = await fetch(`${apiConfig.baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+        Authorization: `Bearer ${apiConfig.apiKey}`,
       },
       body: JSON.stringify({
         model: "deepseek-chat",
@@ -83,4 +123,64 @@ ipcMain.handle('deepseek-chat', async (event, messages) => {  // 监听渲染进
     console.error("DeepSeek API 调用失败:", error);
     throw error;
   }
+});
+
+// 验证 API Key
+ipcMain.handle('validate-api-key', async (event, { apiKey, baseUrl }) => {
+  try {
+    const testResponse = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: 'test' }],
+        stream: false
+      })
+    });
+
+    if (testResponse.ok) {
+      return { valid: true };
+    } else {
+      const errorData = await testResponse.json();
+      return { 
+        valid: false, 
+        error: errorData.error?.message || 'API Key 验证失败' 
+      };
+    }
+  } catch (error) {
+    console.error('验证 API Key 错误:', error);
+    return { 
+      valid: false, 
+      error: '无法连接到 API 服务器' 
+    };
+  }
+});
+
+// 更新 API 配置
+ipcMain.handle('update-api-config', async (event, { apiKey, baseUrl }) => {
+  try {
+    apiConfig.apiKey = apiKey;
+    apiConfig.baseUrl = baseUrl;
+    saveConfig();
+    return { success: true };
+  } catch (error) {
+    console.error('更新配置错误:', error);
+    return { success: false, error: '更新配置失败' };
+  }
+});
+
+// 获取当前配置
+ipcMain.handle('get-api-config', async () => {
+  const maskedKey = apiConfig.apiKey 
+    ? `${apiConfig.apiKey.slice(0, 8)}...${apiConfig.apiKey.slice(-4)}`
+    : '';
+  
+  return {
+    apiKey: maskedKey,
+    baseUrl: apiConfig.baseUrl,
+    hasKey: !!apiConfig.apiKey
+  };
 });
