@@ -264,6 +264,10 @@ body {
   padding: 18px 0; /* 去掉左右内边距，使其看起来像纯文本 */
 }
 
+.message-role {
+  color: #ececf1;
+}
+
 .message-meta {
   display: flex;
   align-items: center;
@@ -620,6 +624,10 @@ body {
   border-bottom: 1px solid #e5e5e5;
 }
 
+.app[data-theme='light'] .message-role {
+  color: #333333;
+}
+
 /* Light Theme Status Badge Overrides */
 .app[data-theme='light'] .status-badge {
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
@@ -865,3 +873,11 @@ body {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+.app[data-theme='light'] .message-role {
+  color: #333333;
+}
+
+.app[data-theme='light'] .message-badge {
+  background: rgba(0, 86, 179, 0.1);
+  color: #0056b3;
+}
