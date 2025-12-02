@@ -8,6 +8,9 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const KNOWLEDGE_SCORE_THRESHOLD = process.env.KNOWLEDGE_SCORE_THRESHOLD
+  ? Number(process.env.KNOWLEDGE_SCORE_THRESHOLD)
+  : 0.55; // 后端默认命中阈值
 
 // 初始化 RAG 服务
 ragService.initialize().catch(err => console.error('RAG 服务初始化失败:', err));
@@ -36,15 +39,17 @@ app.post('/api/knowledge/search', async (req, res) => {
     }
 
     const results = await ragService.search(query, topK);
-    
-    // 构造返回格式，适配前端
-    const bestMatch = results.length > 0 ? {
-      question: query,
-      answer: results.map(r => r.content).join('\n\n---\n\n'), // 合并多个片段作为上下文
-      score: results[0].score
-    } : null;
 
-    res.json({ results, bestMatch });
+    let bestMatch = null;
+    if (results.length > 0 && results[0].score >= KNOWLEDGE_SCORE_THRESHOLD) {
+      bestMatch = {
+        question: query,
+        answer: results.map(r => r.content).join('\n\n---\n\n'), // 合并多个片段作为上下文
+        score: results[0].score,
+      };
+    }
+
+    res.json({ results, bestMatch, threshold: KNOWLEDGE_SCORE_THRESHOLD });
   } catch (error) {
     console.error('搜索失败:', error);
     res.status(500).json({ error: '搜索服务出错' });

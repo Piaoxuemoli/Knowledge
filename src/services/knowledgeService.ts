@@ -5,7 +5,7 @@ import type { KnowledgeItem } from "../types";
  */
 export async function findBestKnowledgeMatch(
   question: string,
-  threshold = 0.6, // 向量相似度阈值，提高到0.6确保准确匹配
+  threshold = 0.55, // 与后端保持一致的默认阈值
 ): Promise<KnowledgeItem | null> {
   try {
     // 直接使用后端地址，不需要 getApiConfig
