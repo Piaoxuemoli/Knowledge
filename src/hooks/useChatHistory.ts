@@ -42,7 +42,7 @@ export function useChatHistory() {
       messages: [{
         id: crypto.randomUUID(),
         role: "assistant",
-        content: "你好喵！本喵是你的知识助手。输入问题后我会结合本地知识库的内容回答你愚蠢的问题喵！",
+        content: "请问吧...",
         source: "deepseek",
       }],
       createdAt: Date.now(),

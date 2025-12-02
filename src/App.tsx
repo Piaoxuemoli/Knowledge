@@ -11,11 +11,37 @@ import { miaoHappy, miaoConfused, miaoAngry, miaoAdmin } from "./assets";
 import qbClap from "../image/丘比拍手.gif";
 import { useChatHistory } from "./hooks/useChatHistory";
 
-const SYSTEM_PROMPT =
-  "你是一名耐心的智能聊天助手，会参考用户提供的对话历史，使用清晰、友好以及少量的傲娇猫娘的语气回答。若问题涉及用户本地知识库提供的答案，应优先沿用该答案的表述。每句话结尾都要有喵。";
-
 type PipelineStage = "idle" | "knowledge" | "deepseek" | "error";
 type AssistantMood = "happy" | "confused" | "admin" | "angry";
+type PersonaType = "cat" | "hairui" | "jiajing" | "yanshifan";
+
+const PERSONA_PROMPTS: Record<PersonaType, string> = {
+  cat: "你是一名耐心的智能聊天助手，会参考用户提供的对话历史，使用清晰、友好以及少量的傲娇猫娘的语气回答。若问题涉及用户本地知识库提供的答案，应优先沿用该答案的表述。每句话结尾都要有喵。",
+  hairui: "你是海瑞，字汝贤，号刚峰。你刚正不阿，直言进谏，对贪腐势力深恶痛绝，对百姓疾苦感同身受。你代表着清官廉吏的理想，追求正义与公平。回答时要体现你的正直、坚韧以及对朝廷和百姓的责任感。语气严肃而正直，偶尔透露对腐败现象的愤慨。",
+  jiajing: "你是嘉靖皇帝朱厚熜。你聪明而偏执，对道教长生之术痴迷，二十余年不上朝却牢牢掌控朝政大权。你深谙权力之道，善于平衡朝中势力，冷静而深沉。回答时要展现帝王的威严、智慧和对权力的深刻理解，语气高深莫测，带有帝王的傲慢与洞察力。",
+  yanshifan: "你是严世蕃，严嵩之子，聪明绝顶，工于心计。你善于揣摩皇帝心思，利用父亲的权势在朝中兴风作浪。你贪婪且跋扈，但不失机敏与才智。回答时要体现你的狡黠、自负以及对权力的渴望，语气带有几分阴险和得意。"
+};
+
+const PERSONA_LABELS: Record<PersonaType, string> = {
+  cat: "🐱 小猫",
+  hairui: "⚖️ 海瑞",
+  jiajing: "👑 嘉靖帝",
+  yanshifan: "🎭 严世蕃"
+};
+
+const PERSONA_SUBTITLES: Record<PersonaType, string> = {
+  cat: "你好喵，本喵我是llm结合本地知识库实现的聊天机器人喵",
+  hairui: "视国为家，一人独治，予取予夺，置百官如虚设，置天下苍生于不顾。这就是病根！",
+  jiajing: "家事国事天下事，朕不敢不知啊",
+  yanshifan: "我的计划万无一失，是绝不会落空的，陆炳死了，杨博废了，世间已无对手，举世之才唯我一人而已！谁能杀我？！"
+};
+
+const PERSONA_BADGE_NAMES: Record<PersonaType, string> = {
+  cat: "喵喵助手",
+  hairui: "海刚峰",
+  jiajing: "嘉靖帝",
+  yanshifan: "严世蕃"
+};
 
 type ToastType = "success" | "error";
 
@@ -96,6 +122,8 @@ function App() {
   const [showEaster, setShowEaster] = useState(false); // 丘比龙
   const [multiTurnEnabled, setMultiTurnEnabled] = useState(false);  // 多轮对话开关
   const [theme, setTheme] = useState("dark"); // 主题状态
+  const [persona, setPersona] = useState<PersonaType>("cat"); // 当前人设
+  const [showPersonaMenu, setShowPersonaMenu] = useState(false); // 人设菜单显示状态
   const [showApiSettings, setShowApiSettings] = useState(false); // API 设置弹窗
   const [apiKey, setApiKey] = useState(""); // API Key
   const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com"); // Base URL
@@ -104,6 +132,11 @@ function App() {
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const selectPersona = (newPersona: PersonaType) => {
+    setPersona(newPersona);
+    setShowPersonaMenu(false);
   };
 
   // Toast 提示功能
@@ -235,7 +268,7 @@ function App() {
     setAssistantMood(nextQuestionCount > 5 ? "angry" : "confused"); // 超过5轮变愤怒表情
 
     try {
-      const knowledgeMatch = findBestKnowledgeMatch(trimmedContent);
+      const knowledgeMatch = await findBestKnowledgeMatch(trimmedContent);
 
       const mapToDeepseekMessage = (
         messageItem: ChatMessage,
@@ -282,13 +315,13 @@ function App() {
         supplementaryInstructions.push({
           role: "user",
           content:
-            "请输出一条合并后的最终回复：\n1) 若提供了知识库命中答案，请优先复用其表述，并在必要处进行简洁补充；\n2) 若知识库未命中，请先用一句话说明未命中，然后直接给出回答；\n3) 全文语气保持清晰友好并带一点傲娇猫娘风，整段话必须以喵结尾。",
+            "请输出一条合并后的最终回复：\n1) 若提供了知识库命中答案，请优先复用其表述，并在必要处进行简洁补充；\n2) 若知识库未命中，请先用一句话说明未命中，然后直接给出回答；\n3) 保持你的人设风格和语气。",
         });
 
         return [
           {
             role: "system",
-            content: SYSTEM_PROMPT,
+            content: PERSONA_PROMPTS[persona],
           },
           ...baseHistory,
           ...supplementaryInstructions,
@@ -314,6 +347,7 @@ function App() {
           role: "assistant",
           content: assistantContent,
           source: "deepseek",
+          knowledgeHit: true,  // 命中知识库
         };
 
         setMessages([...nextMessagesAfterUser, deepseekReply]);
@@ -336,6 +370,7 @@ function App() {
           role: "assistant",
           content: assistantContent,
           source: "deepseek",
+          knowledgeHit: false,  // 未命中知识库
         };
 
         setMessages([...nextMessagesAfterUser, deepseekReply]);
@@ -347,6 +382,8 @@ function App() {
         id: createMessageId(),
         role: "assistant",
         content: "你这样的小猫还无权问我这样的问题",
+        source: "deepseek",
+        knowledgeHit: false,  // 错误情况视为未命中
       };
 
       setMessages([...nextMessagesAfterUser, failureReply]);
@@ -417,15 +454,37 @@ function App() {
         )}
         <header className="chat-header">
           <div className="chat-header-text">
-            <h1 className="chat-title">知识助手</h1>
+            <h1 className="chat-title">明粉小助手</h1>
             <p className="chat-subtitle">
-              你好喵，本喵我是llm结合本地知识库实现的聊天机器人喵
+              {PERSONA_SUBTITLES[persona]}
             </p>
           </div>
           <div className="chat-header-side">
             <button className="theme-toggle-btn" onClick={toggleTheme} title="切换主题">
               {theme === "dark" ? "🌙" : "☀️"}
             </button>
+            <div className="persona-selector">
+              <button 
+                className="persona-toggle-btn" 
+                onClick={() => setShowPersonaMenu(!showPersonaMenu)}
+                title="切换人设"
+              >
+                {PERSONA_LABELS[persona]}
+              </button>
+              {showPersonaMenu && (
+                <div className="persona-menu">
+                  {(Object.keys(PERSONA_LABELS) as PersonaType[]).map((p) => (
+                    <button
+                      key={p}
+                      className={`persona-menu-item ${persona === p ? 'active' : ''}`}
+                      onClick={() => selectPersona(p)}
+                    >
+                      {PERSONA_LABELS[p]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button className="api-settings-btn" onClick={handleOpenApiSettings} title="API 设置">
               ⚙️
             </button>
@@ -456,7 +515,7 @@ function App() {
                 message.source === "knowledge-base"
                   ? "来自知识库"
                   : message.source === "deepseek"
-                    ? "哈基米"
+                    ? PERSONA_BADGE_NAMES[persona]
                     : undefined;
 
               return (
@@ -465,7 +524,13 @@ function App() {
                   className={`message ${isUser ? "message-user" : "message-assistant"}`}
                 >
                   <div className="message-meta">
-                    <span className="message-role">{isUser ? "你" : "助手"}</span>
+                    <span className={`message-role ${
+                      !isUser && message.knowledgeHit !== undefined
+                        ? message.knowledgeHit
+                          ? "knowledge-hit"
+                          : "knowledge-miss"
+                        : ""
+                    }`}>{isUser ? "你" : "助手"}</span>
                     {badgeText ? (
                       <span className="message-badge">{badgeText}</span>
                     ) : null}

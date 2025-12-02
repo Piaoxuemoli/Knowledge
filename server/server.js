@@ -1,12 +1,16 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { ragService } from './services/ragService.js';
 
 // 加载环境变量
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 初始化 RAG 服务
+ragService.initialize().catch(err => console.error('RAG 服务初始化失败:', err));
 
 // API 配置（支持动态更新）
 let apiConfig = {
@@ -21,6 +25,30 @@ app.use(express.json());
 // 健康检查接口
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: '服务器运行中' });
+});
+
+// 知识库搜索接口
+app.post('/api/knowledge/search', async (req, res) => {
+  try {
+    const { query, topK = 3 } = req.body;
+    if (!query) {
+      return res.status(400).json({ error: '查询内容不能为空' });
+    }
+
+    const results = await ragService.search(query, topK);
+    
+    // 构造返回格式，适配前端
+    const bestMatch = results.length > 0 ? {
+      question: query,
+      answer: results.map(r => r.content).join('\n\n---\n\n'), // 合并多个片段作为上下文
+      score: results[0].score
+    } : null;
+
+    res.json({ results, bestMatch });
+  } catch (error) {
+    console.error('搜索失败:', error);
+    res.status(500).json({ error: '搜索服务出错' });
+  }
 });
 
 // DeepSeek API 代理接口

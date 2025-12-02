@@ -287,6 +287,17 @@ body {
   letter-spacing: 0.4px;
 }
 
+/* 知识库命中状态样式 */
+.message-role.knowledge-hit {
+  background: rgba(76, 217, 100, 0.2) !important;
+  color: #4cd964 !important;
+}
+
+.message-role.knowledge-miss {
+  background: rgba(255, 69, 58, 0.2) !important;
+  color: #ff453a !important;
+}
+
 .message-content {
   margin: 0;
   white-space: pre-wrap;
@@ -538,6 +549,66 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Persona Selector */
+.persona-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.persona-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 10px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ececf1;
+}
+
+.persona-toggle-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.persona-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 5px;
+  background-color: #2a2b32;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.persona-menu-item {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  color: #ececf1;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 0.9rem;
+}
+
+.persona-menu-item:hover {
+  background-color: #343541;
+}
+
+.persona-menu-item.active {
+  background-color: #565869;
+  font-weight: bold;
+}
+
 /* API Settings Button */
 .api-settings-btn {
   background: none;
@@ -607,6 +678,32 @@ body {
 
 .app[data-theme='light'] .theme-toggle-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+.app[data-theme='light'] .persona-toggle-btn {
+  color: #333333;
+}
+
+.app[data-theme='light'] .persona-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.app[data-theme='light'] .persona-menu {
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e5e5;
+}
+
+.app[data-theme='light'] .persona-menu-item {
+  color: #333333;
+}
+
+.app[data-theme='light'] .persona-menu-item:hover {
+  background-color: #f7f7f8;
+}
+
+.app[data-theme='light'] .persona-menu-item.active {
+  background-color: #e5e5e5;
 }
 
 .app[data-theme='light'] .chat-title,
@@ -880,4 +977,15 @@ body {
 .app[data-theme='light'] .message-badge {
   background: rgba(0, 86, 179, 0.1);
   color: #0056b3;
+}
+
+/* 浅色主题的知识库命中状态样式 */
+.app[data-theme='light'] .message-role.knowledge-hit {
+  background: rgba(52, 199, 89, 0.15) !important;
+  color: #34c759 !important;
+}
+
+.app[data-theme='light'] .message-role.knowledge-miss {
+  background: rgba(255, 59, 48, 0.15) !important;
+  color: #ff3b30 !important;
 }

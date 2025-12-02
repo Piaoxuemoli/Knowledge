@@ -53,9 +53,12 @@ if %errorlevel% neq 0 (
 
 echo [步骤 4/4] 启动服务...
 echo.
+echo 正在初始化 RAG 向量数据库...
 echo 后端: http://localhost:3000
 echo 前端: http://localhost:5173
 echo.
+echo 首次启动需要加载模型并生成向量，请耐心等待...
+echo 看到 "向量生成完成" 后即可在浏览器访问前端
 echo 按 Ctrl+C 可停止服务
 echo ====================================
 echo.

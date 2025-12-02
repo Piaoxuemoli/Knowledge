@@ -53,9 +53,12 @@ if ($envContent -notmatch "DEEPSEEK_API_KEY=sk-") {
 
 Write-Host "[步骤 4/4] 启动服务..." -ForegroundColor Yellow
 Write-Host ""
+Write-Host "正在初始化 RAG 向量数据库..." -ForegroundColor Magenta
 Write-Host "后端: http://localhost:3000" -ForegroundColor Cyan
 Write-Host "前端: http://localhost:5173" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "首次启动需要加载模型并生成向量，请耐心等待..." -ForegroundColor Yellow
+Write-Host "看到 '向量生成完成' 后即可在浏览器访问前端" -ForegroundColor Green
 Write-Host "按 Ctrl+C 可停止服务" -ForegroundColor Gray
 Write-Host "====================================" -ForegroundColor Cyan
 Write-Host ""

@@ -5,6 +5,7 @@ export interface ChatMessage {
   role: MessageRole;
   content: string;
   source?: "knowledge-base" | "deepseek";
+  knowledgeHit?: boolean;  // 标记是否命中知识库
 }
 
 export interface KnowledgeItem {
