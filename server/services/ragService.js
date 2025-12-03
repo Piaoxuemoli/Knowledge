@@ -7,6 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const modelsDir = path.join(__dirname, '..', 'models');
 
+const TEXT_CHUNK_CHAR_LIMIT = 50; // 每个文本片段的最大长度
+
 env.allowRemoteModels = false; // 禁止远程下载
 env.cacheDir = modelsDir; // 指定缓存目录
 env.localModelPath = modelsDir; // 指向本地模型目录
@@ -64,19 +66,29 @@ class RagService {
       
       this.chunks = [];
       let currentChunk = '';
-      
+
       for (const p of rawParagraphs) {
         const trimmed = p.trim();
         if (!trimmed) continue;
 
-        // 如果当前块加上新段落不超过限制（例如 300 字符），则合并
-        if (currentChunk.length + trimmed.length < 300) {
-          currentChunk += (currentChunk ? '\n' : '') + trimmed;
-        } else {
-          if (currentChunk) this.chunks.push(currentChunk);
-          currentChunk = trimmed;
+        let remaining = trimmed;
+        while (remaining.length > 0) {
+          const part = remaining.slice(0, TEXT_CHUNK_CHAR_LIMIT);
+          remaining = remaining.slice(TEXT_CHUNK_CHAR_LIMIT);
+
+          const separator = currentChunk ? '\n' : '';
+          if (
+            currentChunk.length + separator.length + part.length
+            <= TEXT_CHUNK_CHAR_LIMIT
+          ) {
+            currentChunk += `${separator}${part}`;
+          } else {
+            if (currentChunk) this.chunks.push(currentChunk);
+            currentChunk = part;
+          }
         }
       }
+
       if (currentChunk) this.chunks.push(currentChunk);
 
       console.log(`数据切分完成，共 ${this.chunks.length} 个片段，开始生成向量...`);
